@@ -5,27 +5,34 @@ import (
 )
 
 type Resource interface {
-	Get(map[string][]string) string
-    Post(map[string][]string) string
-    Put(map[string][]string) string
-    Delete(map[string][]string) string
+	Get(p [string][]string) string
+	Post(map[string][]string) string
+	Put(map[string][]string) string
+	Delete(map[string][]string) string
 }
 
-type GetNotSupported struct {}
+type GetNotSupported struct{}
+
 func (GetNotSupported) Get(map[string][]string) string {
-    return "Nope."
+	return "Nope."
 }
-type PostNotSupported struct {}
+
+type PostNotSupported struct{}
+
 func (PostNotSupported) Post(map[string][]string) string {
-    return "Nope."
+	return "Nope."
 }
-type PutNotSupported struct {}
+
+type PutNotSupported struct{}
+
 func (PutNotSupported) Put(map[string][]string) string {
-    return "Nope."
+	return "Nope."
 }
-type DeleteNotSupported struct {}
+
+type DeleteNotSupported struct{}
+
 func (DeleteNotSupported) Delete(map[string][]string) string {
-    return "Nope."
+	return "Nope."
 }
 
 type Route struct {
@@ -51,19 +58,19 @@ func (api *Api) matchResource(path string) Resource {
 }
 
 func (api *Api) dispatchRequest(request *http.Request, resource Resource) string {
-    method := request.Method
+	method := request.Method
 
-    switch method {
-    case "GET":
-        return resource.Get(nil)
-    case "POST":
-        return resource.Post(nil)
-    case "PUT":
-        return resource.Put(nil)
-    case "DELETE":
-        return resource.Delete(nil)
-    }
-    return "Not implemented!"
+	switch method {
+	case "GET":
+		return resource.Get(nil)
+	case "POST":
+		return resource.Post(nil)
+	case "PUT":
+		return resource.Put(nil)
+	case "DELETE":
+		return resource.Delete(nil)
+	}
+	return "Not implemented!"
 }
 
 func (api *Api) HandleRequest(request *http.Request) string {
