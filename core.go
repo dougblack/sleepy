@@ -1,40 +1,40 @@
 package sleepy
 
+import (
+	"net/http"
+)
+
 type Resource interface {
-    Get() string
-    // Post
-    // Put 
-    // Delete
+	Get() string
 }
 
 type Route struct {
-    resource Resource
-    path string
+	resource Resource
+	path     string
 }
 
 func (route *Route) pathMatch(path string) bool {
-    return route.path == path
+	return route.path == path
 }
 
 type Api struct {
-    routes []Route
+	routes []Route
 }
 
 func (api *Api) matchResource(path string) Resource {
-    for _, route := range api.routes {
-        if route.pathMatch(path) {
-            return route.resource
-        }
-    }
-    return nil
+	for _, route := range api.routes {
+		if route.pathMatch(path) {
+			return route.resource
+		}
+	}
+	return nil
 }
 
-func (api *Api) HandleRequest(path string) string {
-    resource := api.matchResource(path)
-    return resource.Get()
+func (api *Api) HandleRequest(request *http.Request) string {
+	resource := api.matchResource(request.URL.Path)
+	return resource.Get()
 }
-
 
 func (api *Api) AddResource(resource Resource, path string) {
-    api.routes = append(api.routes, Route{resource, path})
+	api.routes = append(api.routes, Route{resource, path})
 }
