@@ -35,7 +35,7 @@ func main() {
 
 With a response of
 
-``javascript
+```javascript
 {
     "thing": 5
 }
