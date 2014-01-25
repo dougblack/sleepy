@@ -1,24 +1,28 @@
 package sleepy
 
-type (
-    GetNotSupported struct {}
-    PostNotSupported struct {}
-    PutNotSupported struct {}
-    DeleteNotSupported struct {}
+import (
+	"net/url"
 )
 
-func (GetNotSupported) Get(map[string][]string) string {
-	return "Nope."
+type (
+	GetNotSupported    struct{}
+	PostNotSupported   struct{}
+	PutNotSupported    struct{}
+	DeleteNotSupported struct{}
+)
+
+func (GetNotSupported) Get(values ...url.Values) (int, interface{}) {
+	return 405, map[string]string{"error": "Not implemented"}
 }
 
-func (PostNotSupported) Post(map[string][]string) string {
-	return "Nope."
+func (PostNotSupported) Post(values ...url.Values) (int, interface{}) {
+	return 405, map[string]string{"error": "Not implemented"}
 }
 
-func (PutNotSupported) Put(map[string][]string) string {
-	return "Nope."
+func (PutNotSupported) Put(values ...url.Values) (int, interface{}) {
+	return 405, map[string]string{"error": "Not implemented"}
 }
 
-func (DeleteNotSupported) Delete(map[string][]string) string {
-	return "Nope."
+func (DeleteNotSupported) Delete(values ...url.Values) (int, interface{}) {
+	return 405, map[string]string{"error": "Not implemented"}
 }
