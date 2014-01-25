@@ -1,10 +1,3 @@
-## Sleepy
-
-#### A RESTful framework for Go
-
-Sleepy is a micro-framework for building RESTful APIs.
-
-```go
 package main
 
 import (
@@ -34,13 +27,3 @@ func main() {
     api.Start(3000)
 
 }
-```
-
-Now if we curl that endpoint:
-
-```bash
-curl localhost:3000/items
-{"items": ["item1", "item2"]}
-```
-
-Stay tuned.
