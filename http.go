@@ -12,17 +12,17 @@ type (
 )
 
 func (GetNotSupported) Get(values ...url.Values) (int, interface{}) {
-	return 405, map[string]string{"error": "Not implemented"}
+	return 405, ""
 }
 
 func (PostNotSupported) Post(values ...url.Values) (int, interface{}) {
-	return 405, map[string]string{"error": "Not implemented"}
+	return 405, ""
 }
 
 func (PutNotSupported) Put(values ...url.Values) (int, interface{}) {
-	return 405, map[string]string{"error": "Not implemented"}
+	return 405, ""
 }
 
 func (DeleteNotSupported) Delete(values ...url.Values) (int, interface{}) {
-	return 405, map[string]string{"error": "Not implemented"}
+	return 405, ""
 }

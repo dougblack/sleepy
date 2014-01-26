@@ -21,30 +21,10 @@ type Resource interface {
 	Delete(values ...url.Values) (int, interface{})
 }
 
-type Route struct {
-	resource Resource
-	path     string
-}
+type Api struct{}
 
-func (route *Route) pathMatch(path string) bool {
-	return route.path == path
-}
-
-type Api struct {
-	routes []Route
-}
-
-func (api *Api) matchResource(path string) Resource {
-	for _, route := range api.routes {
-		if route.pathMatch(path) {
-			return route.resource
-		}
-	}
-	return nil
-}
-
-func (api *Api) Abort(statusCode int) (int, interface{}) {
-	return statusCode, map[string]string{"error": "Aborted."}
+func (api *Api) Abort(rw http.ResponseWriter, statusCode int) {
+	rw.WriteHeader(statusCode)
 }
 
 type HandleFunc func(http.ResponseWriter, *http.Request)
@@ -52,16 +32,14 @@ type HandleFunc func(http.ResponseWriter, *http.Request)
 func (api *Api) requestHandler(resource Resource) HandleFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
-		var code int
 		var data interface{}
-		var content []byte
+		var code int
 
 		method := request.Method
-
-		if request.ParseForm() == nil {
-			code, data = api.Abort(500)
+		if request.ParseForm() != nil {
+			api.Abort(rw, 400)
+			return
 		}
-
 		values := request.Form
 
 		switch method {
@@ -74,12 +52,14 @@ func (api *Api) requestHandler(resource Resource) HandleFunc {
 		case DELETE:
 			code, data = resource.Delete(values)
 		default:
-			code, data = 405, map[string]string{"error": "Not implemented!"}
+			api.Abort(rw, 405)
+			return
 		}
 
 		content, err := json.Marshal(data)
 		if err != nil {
-			content, _ = json.Marshal(map[string]string{"error": "Bad response."})
+			api.Abort(rw, 500)
+			return
 		}
 
 		rw.WriteHeader(code)
@@ -94,4 +74,5 @@ func (api *Api) AddResource(resource Resource, path string) {
 func (api *Api) Start(port int) {
 	portString := fmt.Sprintf(":%d", port)
 	http.ListenAndServe(portString, nil)
+	fmt.Println("Hi.")
 }
