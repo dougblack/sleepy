@@ -14,12 +14,22 @@ const (
 	DELETE = "DELETE"
 )
 
-type Resource interface {
+type GetResource interface {
 	Get(values ...url.Values) (int, interface{})
+}
+
+type PostResource interface {
 	Post(values ...url.Values) (int, interface{})
+}
+
+type PutResource interface {
 	Put(values ...url.Values) (int, interface{})
+}
+
+type DeleteResource interface {
 	Delete(values ...url.Values) (int, interface{})
 }
+
 
 type Api struct{}
 
@@ -44,13 +54,33 @@ func (api *Api) requestHandler(resource Resource) HandleFunc {
 
 		switch method {
 		case GET:
-			code, data = resource.Get(values)
+		    getter, ok := resource.(GetResource)
+		    if ok {
+    			code, data = resource.Get(values)
+			} else {
+			    code, data = 405, ""
+		    }
 		case POST:
-			code, data = resource.Post(values)
+		    poster, ok := resource.(PostResource)
+		    if ok {
+    			code, data = resource.Post(values)
+			} else {
+			    code, data = 405, ""
+		    }
 		case PUT:
-			code, data = resource.Put(values)
+		    putter, ok := resource.(PutResource)
+		    if ok {
+    			code, data = resource.Put(values)
+			} else {
+			    code, data = 405, ""
+		    }
 		case DELETE:
-			code, data = resource.Delete(values)
+		    deleter, ok := resource.(DeleteResource)
+		    if ok {
+    			code, data = resource.Delete(values)
+			} else {
+			    code, data = 405, ""
+		    }
 		default:
 			api.Abort(rw, 405)
 			return

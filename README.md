@@ -12,11 +12,9 @@ import (
     "sleepy"
 )
 
-type Item struct {
-    sleepy.PostNotSupported
-    sleepy.PutNotSupported
-    sleepy.DeleteNotSupported
-}
+type Item struct {}
+
+// Nonimplemented methods return 405, "" by default, so implement Get.
 
 func (item Item) Get(values ...url.Values) (int, interface{}) {
     items := []string{"item1", "item2"}
