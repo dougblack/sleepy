@@ -22,10 +22,10 @@ type Resource interface {
 }
 
 type BaseResource struct {
-  GetNotSupported
-  PostNotSupported
-  PutNotSupported
-  DeleteNotSupported
+	GetNotSupported
+	PostNotSupported
+	PutNotSupported
+	DeleteNotSupported
 }
 
 type Api struct{}
