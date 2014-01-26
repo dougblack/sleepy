@@ -39,7 +39,7 @@ func (api *Api) Abort(rw http.ResponseWriter, statusCode int) {
 
 type HandleFunc func(http.ResponseWriter, *http.Request)
 
-func (api *Api) requestHandler(resource Resource) HandleFunc {
+func (api *Api) requestHandler(resource interface{}) HandleFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
 		var data interface{}
@@ -56,28 +56,28 @@ func (api *Api) requestHandler(resource Resource) HandleFunc {
 		case GET:
 		    getter, ok := resource.(GetResource)
 		    if ok {
-    			code, data = resource.Get(values)
+    			code, data = getter.Get(values)
 			} else {
 			    code, data = 405, ""
 		    }
 		case POST:
 		    poster, ok := resource.(PostResource)
 		    if ok {
-    			code, data = resource.Post(values)
+    			code, data = poster.Post(values)
 			} else {
 			    code, data = 405, ""
 		    }
 		case PUT:
 		    putter, ok := resource.(PutResource)
 		    if ok {
-    			code, data = resource.Put(values)
+    			code, data = putter.Put(values)
 			} else {
 			    code, data = 405, ""
 		    }
 		case DELETE:
 		    deleter, ok := resource.(DeleteResource)
 		    if ok {
-    			code, data = resource.Delete(values)
+    			code, data = deleter.Delete(values)
 			} else {
 			    code, data = 405, ""
 		    }
@@ -97,7 +97,7 @@ func (api *Api) requestHandler(resource Resource) HandleFunc {
 	}
 }
 
-func (api *Api) AddResource(resource Resource, path string) {
+func (api *Api) AddResource(resource interface{}, path string) {
 	http.HandleFunc(path, api.requestHandler(resource))
 }
 
