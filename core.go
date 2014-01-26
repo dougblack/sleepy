@@ -21,6 +21,13 @@ type Resource interface {
 	Delete(values url.Values) (int, interface{})
 }
 
+type BaseResource struct {
+	GetNotSupported
+	PostNotSupported
+	PutNotSupported
+	DeleteNotSupported
+}
+
 type Api struct{}
 
 func (api *Api) Abort(rw http.ResponseWriter, statusCode int) {
