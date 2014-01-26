@@ -9,7 +9,7 @@ package main
 
 import (
     "net/url"
-    "sleepy"
+    "github.com/dougblack/sleepy"
 )
 
 type Item struct {
