@@ -15,10 +15,10 @@ const (
 )
 
 type Resource interface {
-	Get(values ...url.Values) (int, interface{})
-	Post(values ...url.Values) (int, interface{})
-	Put(values ...url.Values) (int, interface{})
-	Delete(values ...url.Values) (int, interface{})
+	Get(values url.Values) (int, interface{})
+	Post(values url.Values) (int, interface{})
+	Put(values url.Values) (int, interface{})
+	Delete(values url.Values) (int, interface{})
 }
 
 type Api struct{}
@@ -56,14 +56,12 @@ func (api *Api) requestHandler(resource Resource) HandleFunc {
 			return
 		}
 
-		content, err := json.Marshal(data)
-		if err != nil {
-			api.Abort(rw, 500)
-			return
-		}
-
+        responseWriter := json.NewEncoder(rw)
 		rw.WriteHeader(code)
-		rw.Write(content)
+		if responseWriter.Encode(data) != nil {
+            api.Abort(rw, 500)
+            return
+        }
 	}
 }
 

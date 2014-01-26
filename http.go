@@ -11,18 +11,18 @@ type (
 	DeleteNotSupported struct{}
 )
 
-func (GetNotSupported) Get(values ...url.Values) (int, interface{}) {
+func (GetNotSupported) Get(values url.Values) (int, interface{}) {
 	return 405, ""
 }
 
-func (PostNotSupported) Post(values ...url.Values) (int, interface{}) {
+func (PostNotSupported) Post(values url.Values) (int, interface{}) {
 	return 405, ""
 }
 
-func (PutNotSupported) Put(values ...url.Values) (int, interface{}) {
+func (PutNotSupported) Put(values url.Values) (int, interface{}) {
 	return 405, ""
 }
 
-func (DeleteNotSupported) Delete(values ...url.Values) (int, interface{}) {
+func (DeleteNotSupported) Delete(values url.Values) (int, interface{}) {
 	return 405, ""
 }

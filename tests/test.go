@@ -11,7 +11,7 @@ type Bar struct {
 	sleepy.DeleteNotSupported
 }
 
-func (b Bar) Get(values ...url.Values) (int, interface{}) {
+func (b Bar) Get(values url.Values) (int, interface{}) {
 	return 200, map[string]string{"hello": "goodbye"}
 }
 
