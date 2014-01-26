@@ -27,9 +27,7 @@ func (api *Api) Abort(rw http.ResponseWriter, statusCode int) {
 	rw.WriteHeader(statusCode)
 }
 
-type HandleFunc func(http.ResponseWriter, *http.Request)
-
-func (api *Api) requestHandler(resource Resource) HandleFunc {
+func (api *Api) requestHandler(resource Resource) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
 		var data interface{}
