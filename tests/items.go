@@ -6,9 +6,7 @@ import (
 )
 
 type Item struct {
-	sleepy.PostNotSupported
-	sleepy.PutNotSupported
-	sleepy.DeleteNotSupported
+	sleepy.BaseResource
 }
 
 func (item Item) Get(values url.Values) (int, interface{}) {

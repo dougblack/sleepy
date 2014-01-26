@@ -4,25 +4,20 @@ import (
 	"net/url"
 )
 
-type (
-	GetNotSupported    struct{}
-	PostNotSupported   struct{}
-	PutNotSupported    struct{}
-	DeleteNotSupported struct{}
-)
+type BaseResource struct{}
 
-func (GetNotSupported) Get(values url.Values) (int, interface{}) {
+func (BaseResource) Get(values url.Values) (int, interface{}) {
 	return 405, ""
 }
 
-func (PostNotSupported) Post(values url.Values) (int, interface{}) {
+func (BaseResource) Post(values url.Values) (int, interface{}) {
 	return 405, ""
 }
 
-func (PutNotSupported) Put(values url.Values) (int, interface{}) {
+func (BaseResource) Put(values url.Values) (int, interface{}) {
 	return 405, ""
 }
 
-func (DeleteNotSupported) Delete(values url.Values) (int, interface{}) {
+func (BaseResource) Delete(values url.Values) (int, interface{}) {
 	return 405, ""
 }

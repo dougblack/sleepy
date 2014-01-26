@@ -25,6 +25,7 @@ type Api struct{}
 
 func (api *Api) Abort(rw http.ResponseWriter, statusCode int) {
 	rw.WriteHeader(statusCode)
+	rw.Write([]byte(http.StatusText(statusCode)))
 }
 
 func (api *Api) requestHandler(resource Resource) http.HandlerFunc {
@@ -54,12 +55,12 @@ func (api *Api) requestHandler(resource Resource) http.HandlerFunc {
 			return
 		}
 
-        responseWriter := json.NewEncoder(rw)
+		content, err := json.Marshal(data)
+		if err != nil {
+			api.Abort(rw, 500)
+		}
 		rw.WriteHeader(code)
-		if responseWriter.Encode(data) != nil {
-            api.Abort(rw, 500)
-            return
-        }
+		rw.Write(content)
 	}
 }
 
