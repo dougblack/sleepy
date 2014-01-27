@@ -39,6 +39,10 @@ curl localhost:3000/items
 `sleepy` has not been officially released yet, as it is still in active
 development.
 
+## Docs
+
+Documentation lives [here](http://godoc.org/github.com/dougblack/sleepy).
+
 ## License
 
 `sleepy` is released under the [MIT License](http://opensource.org/licenses/MIT).
