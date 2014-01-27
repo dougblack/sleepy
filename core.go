@@ -76,29 +76,29 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 
 		switch method {
 		case GET:
-			if r, ok := resource.(GetSupported); ok {
-				code, data = r.Get(values)
+			if resource, ok := resource.(GetSupported); ok {
+				code, data = resource.Get(values)
 			} else {
 				api.Abort(rw, 405)
 				return
 			}
 		case POST:
-			if r, ok := resource.(PostSupported); ok {
-				code, data = r.Post(values)
+			if resource, ok := resource.(PostSupported); ok {
+				code, data = resource.Post(values)
 			} else {
 				api.Abort(rw, 405)
 				return
 			}
 		case PUT:
-			if r, ok := resource.(PutSupported); ok {
-				code, data = r.Put(values)
+			if resource, ok := resource.(PutSupported); ok {
+				code, data = resource.Put(values)
 			} else {
 				api.Abort(rw, 405)
 				return
 			}
 		case DELETE:
-			if r, ok := resource.(DeleteSupported); ok {
-				code, data = r.Delete(values)
+			if resource, ok := resource.(DeleteSupported); ok {
+				code, data = resource.Delete(values)
 			} else {
 				api.Abort(rw, 405)
 				return
