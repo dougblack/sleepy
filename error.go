@@ -1,9 +1,9 @@
 package sleepy
 
-type errorString struct {
+type ErrorString struct {
     s string
 }
 
-func (e *errorString) Error() string {
+func (e *ErrorString) Error() string {
     return e.s
 }

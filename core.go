@@ -14,24 +14,28 @@ const (
 	DELETE = "DELETE"
 )
 
-type geter interface {
+type GetSupported interface {
 	Get(values url.Values) (int, interface{})
 }
 
-type poster interface {
+type PostSupported interface {
 	Post(values url.Values) (int, interface{})
 }
 
-type puter interface {
+type PutSupported interface {
 	Put(values url.Values) (int, interface{})
 }
 
-type deleter interface {
+type DeleteSupported interface {
 	Delete(values url.Values) (int, interface{})
 }
 
 type API struct {
     mux *http.ServeMux
+}
+
+func NewAPI() *API {
+    return &API{}
 }
 
 func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
@@ -41,33 +45,47 @@ func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
 
 func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-		method := request.Method
-		if request.ParseForm() != nil {
-			api.Abort(rw, 400)
-			return
-		}
-		values := request.Form
 
+        var err error
 		var data interface{} = ""
 		var code int = 405
 
+		method := request.Method
+		if request.ParseForm() != nil {
+			api.Abort(rw, 400)
+            return
+		}
+		values := request.Form
+
 		switch method {
 		case GET:
-			if r, ok := resource.(geter); ok {
+			if r, ok := resource.(GetSupported); ok {
 				code, data = r.Get(values)
-			}
+			} else {
+                api.Abort(rw, 405)
+                return
+            }
 		case POST:
-			if r, ok := resource.(poster); ok {
+			if r, ok := resource.(PostSupported); ok {
 				code, data = r.Post(values)
-			}
+			} else {
+                api.Abort(rw, 405)
+                return
+            }
 		case PUT:
-			if r, ok := resource.(puter); ok {
+			if r, ok := resource.(PutSupported); ok {
 				code, data = r.Put(values)
-			}
+			} else {
+                api.Abort(rw, 405)
+                return
+            }
 		case DELETE:
-			if r, ok := resource.(deleter); ok {
+			if r, ok := resource.(DeleteSupported); ok {
 				code, data = r.Delete(values)
-			}
+			} else {
+                api.Abort(rw, 405)
+                return
+            }
 		default:
 			api.Abort(rw, 405)
 			return
@@ -91,7 +109,7 @@ func (api *API) AddResource(resource interface{}, path string) {
 
 func (api *API) Start(port int) error {
     if api.mux == nil {
-        return &errorString{"You must add at last one resource to this API."}
+        return &ErrorString{"You must add at least one resource to this API."}
     }
 	portString := fmt.Sprintf(":%d", port)
 	http.ListenAndServe(portString, api.mux)
