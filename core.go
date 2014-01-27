@@ -14,30 +14,46 @@ const (
 	DELETE = "DELETE"
 )
 
+// GetSupported is the interface that provides the Get
+// method a resource must support to receive HTTP GETs.
 type GetSupported interface {
 	Get(values url.Values) (int, interface{})
 }
 
+// PostSupported is the interface that provides the Get
+// method a resource must support to receive HTTP GETs.
 type PostSupported interface {
 	Post(values url.Values) (int, interface{})
 }
 
+// PutSupported is the interface that provides the Get
+// method a resource must support to receive HTTP GETs.
 type PutSupported interface {
 	Put(values url.Values) (int, interface{})
 }
 
+// DeleteSupported is the interface that provides the Get
+// method a resource must support to receive HTTP GETs.
 type DeleteSupported interface {
 	Delete(values url.Values) (int, interface{})
 }
 
+// An API manages a group of resources by routing to requests
+// to the correct method on a matching resource.
+//
+// You can instantiate multiple APIs on separate ports. Each API
+// will manage its own set of resources.
 type API struct {
     mux *http.ServeMux
 }
 
+// NewAPI allocates and returns a new API.
 func NewAPI() *API {
     return &API{}
 }
 
+// Abort responds to a given request with the status text associated
+// with the passed in HTTP status code.
 func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
 	rw.WriteHeader(statusCode)
 	rw.Write([]byte(http.StatusText(statusCode)))
@@ -100,6 +116,9 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	}
 }
 
+// AddResource adds a new resource to an API. The API will route
+// request matching the path to the correct HTTP method on the
+// resource.
 func (api *API) AddResource(resource interface{}, path string) {
     if api.mux == nil {
         api.mux = http.NewServeMux()
@@ -107,6 +126,7 @@ func (api *API) AddResource(resource interface{}, path string) {
 	api.mux.HandleFunc(path, api.requestHandler(resource))
 }
 
+// Start causes the API to begin serving requests on the given port.
 func (api *API) Start(port int) error {
     if api.mux == nil {
         return &ErrorString{"You must add at least one resource to this API."}
