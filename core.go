@@ -21,14 +21,17 @@ type Resource interface {
 	Delete(values url.Values) (int, interface{})
 }
 
-type Api struct{}
+type API struct {
+    mux *http.ServeMux
+}
 
-func (api *Api) Abort(rw http.ResponseWriter, statusCode int) {
+func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
 	rw.WriteHeader(statusCode)
 	rw.Write([]byte(http.StatusText(statusCode)))
 }
 
-func (api *Api) requestHandler(resource Resource) http.HandlerFunc {
+
+func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
 		var data interface{}
@@ -64,12 +67,19 @@ func (api *Api) requestHandler(resource Resource) http.HandlerFunc {
 	}
 }
 
-func (api *Api) AddResource(resource Resource, path string) {
-	http.HandleFunc(path, api.requestHandler(resource))
+func (api *API) AddResource(resource Resource, path string) {
+    if api.mux == nil {
+        api.mux = http.NewServeMux()
+    }
+	api.mux.HandleFunc(path, api.requestHandler(resource))
 }
 
-func (api *Api) Start(port int) {
+func (api *API) Start(port int) error {
+    if api.mux == nil {
+        return &errorString{"You must add at last one resource to this API."}
+    }
 	portString := fmt.Sprintf(":%d", port)
-	http.ListenAndServe(portString, nil)
+	http.ListenAndServe(portString, api.mux)
 	fmt.Println("Hi.")
+    return nil
 }

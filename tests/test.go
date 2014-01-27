@@ -5,18 +5,23 @@ import (
 	"sleepy"
 )
 
-type Bar struct {
+type Item struct {
 	sleepy.BaseResource
 }
 
-func (b Bar) Get(values url.Values) (int, interface{}) {
-	return 200, map[string]string{"hello": "goodbye"}
+func (item Item) Get(values url.Values) (int, interface{}) {
+	items := []string{"item1", "item2"}
+	data := map[string][]string{"items": items}
+
+	return 200, data
 }
 
 func main() {
-	bar := new(Bar)
 
-	var api = new(sleepy.Api)
-	api.AddResource(bar, "/bar")
+	item := new(Item)
+
+	var api = new(sleepy.API)
+	api.AddResource(item, "/items")
 	api.Start(3000)
+
 }
