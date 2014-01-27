@@ -9,12 +9,10 @@ package main
 
 import (
     "net/url"
-
     "github.com/dougblack/sleepy"
 )
 
-type Item struct {
-}
+type Item struct { }
 
 func (item Item) Get(values url.Values) (int, interface{}) {
     items := []string{"item1", "item2"}
@@ -39,8 +37,9 @@ curl localhost:3000/items
 {"items": ["item1", "item2"]}
 ```
 
-Stay tuned.
+`sleepy` has not been officially released yet, as it is still in active
+development.
 
 ## License
 
-Sleepy is released under the [MIT License](http://opensource.org/licenses/MIT).
+`sleepy` is released under the [MIT License](http://opensource.org/licenses/MIT).
