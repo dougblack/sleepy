@@ -5,4 +5,5 @@ A huge thanks to all of our contributors:
 
 
 - Doug Black 
+- Karan Misra 
 - strandmon 
