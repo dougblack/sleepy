@@ -2,6 +2,7 @@ package sleepy
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -44,12 +45,12 @@ type DeleteSupported interface {
 // You can instantiate multiple APIs on separate ports. Each API
 // will manage its own set of resources.
 type API struct {
-    mux *http.ServeMux
+	mux *http.ServeMux
 }
 
 // NewAPI allocates and returns a new API.
 func NewAPI() *API {
-    return &API{}
+	return &API{}
 }
 
 // Abort responds to a given request with the status text associated
@@ -62,14 +63,14 @@ func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
 func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
-        var err error
+		var err error
 		var data interface{} = ""
 		var code int = 405
 
 		method := request.Method
 		if request.ParseForm() != nil {
 			api.Abort(rw, 400)
-            return
+			return
 		}
 		values := request.Form
 
@@ -78,30 +79,30 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			if r, ok := resource.(GetSupported); ok {
 				code, data = r.Get(values)
 			} else {
-                api.Abort(rw, 405)
-                return
-            }
+				api.Abort(rw, 405)
+				return
+			}
 		case POST:
 			if r, ok := resource.(PostSupported); ok {
 				code, data = r.Post(values)
 			} else {
-                api.Abort(rw, 405)
-                return
-            }
+				api.Abort(rw, 405)
+				return
+			}
 		case PUT:
 			if r, ok := resource.(PutSupported); ok {
 				code, data = r.Put(values)
 			} else {
-                api.Abort(rw, 405)
-                return
-            }
+				api.Abort(rw, 405)
+				return
+			}
 		case DELETE:
 			if r, ok := resource.(DeleteSupported); ok {
 				code, data = r.Delete(values)
 			} else {
-                api.Abort(rw, 405)
-                return
-            }
+				api.Abort(rw, 405)
+				return
+			}
 		default:
 			api.Abort(rw, 405)
 			return
@@ -120,18 +121,18 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 // request matching the path to the correct HTTP method on the
 // resource.
 func (api *API) AddResource(resource interface{}, path string) {
-    if api.mux == nil {
-        api.mux = http.NewServeMux()
-    }
+	if api.mux == nil {
+		api.mux = http.NewServeMux()
+	}
 	api.mux.HandleFunc(path, api.requestHandler(resource))
 }
 
 // Start causes the API to begin serving requests on the given port.
 func (api *API) Start(port int) error {
-    if api.mux == nil {
-        return &ErrorString{"You must add at least one resource to this API."}
-    }
+	if api.mux == nil {
+		return errors.New("You must add at least one resource to this API.")
+	}
 	portString := fmt.Sprintf(":%d", port)
 	http.ListenAndServe(portString, api.mux)
-    return nil
+	return nil
 }
