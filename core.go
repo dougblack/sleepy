@@ -14,10 +14,19 @@ const (
 	DELETE = "DELETE"
 )
 
-type Resource interface {
+type geter interface {
 	Get(values url.Values) (int, interface{})
+}
+
+type poster interface {
 	Post(values url.Values) (int, interface{})
+}
+
+type puter interface {
 	Put(values url.Values) (int, interface{})
+}
+
+type deleter interface {
 	Delete(values url.Values) (int, interface{})
 }
 
@@ -30,13 +39,8 @@ func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
 	rw.Write([]byte(http.StatusText(statusCode)))
 }
 
-
-func (api *API) requestHandler(resource Resource) http.HandlerFunc {
+func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
-
-		var data interface{}
-		var code int
-
 		method := request.Method
 		if request.ParseForm() != nil {
 			api.Abort(rw, 400)
@@ -44,15 +48,26 @@ func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 		}
 		values := request.Form
 
+		var data interface{} = ""
+		var code int = 405
+
 		switch method {
 		case GET:
-			code, data = resource.Get(values)
+			if r, ok := resource.(geter); ok {
+				code, data = r.Get(values)
+			}
 		case POST:
-			code, data = resource.Post(values)
+			if r, ok := resource.(poster); ok {
+				code, data = r.Post(values)
+			}
 		case PUT:
-			code, data = resource.Put(values)
+			if r, ok := resource.(puter); ok {
+				code, data = r.Put(values)
+			}
 		case DELETE:
-			code, data = resource.Delete(values)
+			if r, ok := resource.(deleter); ok {
+				code, data = r.Delete(values)
+			}
 		default:
 			api.Abort(rw, 405)
 			return
@@ -67,7 +82,7 @@ func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 	}
 }
 
-func (api *API) AddResource(resource Resource, path string) {
+func (api *API) AddResource(resource interface{}, path string) {
     if api.mux == nil {
         api.mux = http.NewServeMux()
     }
@@ -80,6 +95,5 @@ func (api *API) Start(port int) error {
     }
 	portString := fmt.Sprintf(":%d", port)
 	http.ListenAndServe(portString, api.mux)
-	fmt.Println("Hi.")
     return nil
 }
