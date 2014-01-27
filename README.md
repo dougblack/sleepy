@@ -42,3 +42,7 @@ curl localhost:3000/items
 ```
 
 Stay tuned.
+
+## License
+
+Sleepy is released under the [MIT License](http://opensource.org/licenses/MIT).
