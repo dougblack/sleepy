@@ -2,13 +2,11 @@ package main
 
 import (
 	"net/url"
-	"sleepy"
+
+	"github.com/dougblack/sleepy"
 )
 
 type Bar struct {
-	sleepy.PostNotSupported
-	sleepy.PutNotSupported
-	sleepy.DeleteNotSupported
 }
 
 func (b Bar) Get(values url.Values) (int, interface{}) {
