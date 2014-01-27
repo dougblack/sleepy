@@ -17,7 +17,6 @@ type Item struct { }
 func (item Item) Get(values url.Values) (int, interface{}) {
     items := []string{"item1", "item2"}
     data := map[string][]string{"items": items}
-
     return 200, data
 }
 
