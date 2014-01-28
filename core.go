@@ -93,6 +93,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 		content, err := json.Marshal(data)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		rw.WriteHeader(code)
 		rw.Write(content)
