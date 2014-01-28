@@ -22,19 +22,19 @@ type GetSupported interface {
 }
 
 // PostSupported is the interface that provides the Post
-// method a resource must support to receive HTTP POST.
+// method a resource must support to receive HTTP POSTs.
 type PostSupported interface {
 	Post(url.Values) (int, interface{})
 }
 
 // PutSupported is the interface that provides the Put
-// method a resource must support to receive HTTP PUT.
+// method a resource must support to receive HTTP PUTs.
 type PutSupported interface {
 	Put(url.Values) (int, interface{})
 }
 
 // DeleteSupported is the interface that provides the Delete
-// method a resource must support to receive HTTP DELETE.
+// method a resource must support to receive HTTP DELETEs.
 type DeleteSupported interface {
 	Delete(url.Values) (int, interface{})
 }
