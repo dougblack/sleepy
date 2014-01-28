@@ -18,29 +18,30 @@ const (
 // GetSupported is the interface that provides the Get
 // method a resource must support to receive HTTP GETs.
 type GetSupported interface {
-	Get(values url.Values) (int, interface{})
+	Get(url.Values) (int, interface{})
 }
 
 // PostSupported is the interface that provides the Post
 // method a resource must support to receive HTTP POST.
 type PostSupported interface {
-	Post(values url.Values) (int, interface{})
+	Post(url.Values) (int, interface{})
 }
 
 // PutSupported is the interface that provides the Put
 // method a resource must support to receive HTTP PUT.
 type PutSupported interface {
-	Put(values url.Values) (int, interface{})
+	Put(url.Values) (int, interface{})
 }
 
 // DeleteSupported is the interface that provides the Delete
 // method a resource must support to receive HTTP DELETE.
 type DeleteSupported interface {
-	Delete(values url.Values) (int, interface{})
+	Delete(url.Values) (int, interface{})
 }
 
 // An API manages a group of resources by routing to requests
-// to the correct method on a matching resource.
+// to the correct method on a matching resource and marshalling
+// the returned data to JSON for the HTTP response.
 //
 // You can instantiate multiple APIs on separate ports. Each API
 // will manage its own set of resources.
@@ -53,64 +54,45 @@ func NewAPI() *API {
 	return &API{}
 }
 
-// Abort responds to a given request with the status text associated
-// with the passed in HTTP status code.
-func (api *API) Abort(rw http.ResponseWriter, statusCode int) {
-	rw.WriteHeader(statusCode)
-	rw.Write([]byte(http.StatusText(statusCode)))
-}
-
 func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
-		var err error
-		var data interface{} = ""
-		var code int = 405
-
-		method := request.Method
 		if request.ParseForm() != nil {
-			api.Abort(rw, 400)
+			rw.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		values := request.Form
 
-		switch method {
+		var handler func(url.Values) (int, interface{})
+
+		switch request.Method {
 		case GET:
 			if resource, ok := resource.(GetSupported); ok {
-				code, data = resource.Get(values)
-			} else {
-				api.Abort(rw, 405)
-				return
+				handler = resource.Get
 			}
 		case POST:
 			if resource, ok := resource.(PostSupported); ok {
-				code, data = resource.Post(values)
-			} else {
-				api.Abort(rw, 405)
-				return
+				handler = resource.Post
 			}
 		case PUT:
 			if resource, ok := resource.(PutSupported); ok {
-				code, data = resource.Put(values)
-			} else {
-				api.Abort(rw, 405)
-				return
+				handler = resource.Put
 			}
 		case DELETE:
 			if resource, ok := resource.(DeleteSupported); ok {
-				code, data = resource.Delete(values)
-			} else {
-				api.Abort(rw, 405)
-				return
+				handler = resource.Delete
 			}
-		default:
-			api.Abort(rw, 405)
+		}
+
+		if handler == nil {
+			rw.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 
+		code, data := handler(request.Form)
+
 		content, err := json.Marshal(data)
 		if err != nil {
-			api.Abort(rw, 500)
+			rw.WriteHeader(http.StatusInternalServerError)
 		}
 		rw.WriteHeader(code)
 		rw.Write(content)
@@ -118,8 +100,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 }
 
 // AddResource adds a new resource to an API. The API will route
-// request matching the path to the correct HTTP method on the
-// resource.
+// requests to the matching HTTP method on the resource.
 func (api *API) AddResource(resource interface{}, path string) {
 	if api.mux == nil {
 		api.mux = http.NewServeMux()
@@ -133,6 +114,5 @@ func (api *API) Start(port int) error {
 		return errors.New("You must add at least one resource to this API.")
 	}
 	portString := fmt.Sprintf(":%d", port)
-	http.ListenAndServe(portString, api.mux)
-	return nil
+	return http.ListenAndServe(portString, api.mux)
 }
