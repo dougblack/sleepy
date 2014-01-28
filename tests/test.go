@@ -19,7 +19,7 @@ func main() {
 	item := new(Item)
 
 	var api = sleepy.NewAPI()
-	api.AddResource(item, "/items")
+	api.AddResource(item, "/items", "/bar", "/baz")
 	api.Start(3000)
 
 }

@@ -100,12 +100,15 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 }
 
 // AddResource adds a new resource to an API. The API will route
-// requests to the matching HTTP method on the resource.
-func (api *API) AddResource(resource interface{}, path string) {
+// requests that match one of the given paths to the matching HTTP
+// method on the resource.
+func (api *API) AddResource(resource interface{}, paths ...string) {
 	if api.mux == nil {
 		api.mux = http.NewServeMux()
 	}
-	api.mux.HandleFunc(path, api.requestHandler(resource))
+	for _, path := range paths {
+		api.mux.HandleFunc(path, api.requestHandler(resource))
+	}
 }
 
 // Start causes the API to begin serving requests on the given port.
