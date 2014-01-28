@@ -32,7 +32,7 @@ func main() {
 Now if we curl that endpoint:
 
 ```bash
-curl localhost:3000/items
+$ curl localhost:3000/items
 {"items": ["item1", "item2"]}
 ```
 
