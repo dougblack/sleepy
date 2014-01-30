@@ -112,6 +112,22 @@ func (api *API) AddResource(resource interface{}, paths ...string) {
 	}
 }
 
+// AddStaticFiles adds a new static files to an API.
+func (api *API) AddStaticFiles(path, path_to_files string) {
+	if api.mux == nil {
+		api.mux = http.NewServeMux()
+	}
+	api.mux.Handle(path, http.StripPrefix(path, http.FileServer(http.Dir(path_to_files))))
+}
+
+// AddCustomHandler adds a handler which is not a resource.
+func (api *API) AddCustomHandler(path string, handler http.HandlerFunc) {
+	if api.mux == nil {
+		api.mux = http.NewServeMux()
+	}
+	api.mux.HandleFunc(path, handler)
+}
+
 // Start causes the API to begin serving requests on the given port.
 func (api *API) Start(port int) error {
 	if api.mux == nil {
