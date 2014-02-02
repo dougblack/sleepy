@@ -35,6 +35,7 @@ func (books *Books) PathLength() int {
 
 // GET /books/
 func (books Books) Get(book interface{}, id string) (int, interface{}) {
+	// selecting all books from the database
 	data, err := dbmap.Select(Book{}, "select * from books")
 	if err != nil {
 		fmt.Print(err)
@@ -45,6 +46,7 @@ func (books Books) Get(book interface{}, id string) (int, interface{}) {
 
 // POST /books/
 func (books Books) Post(book interface{}, id string) (int, interface{}) {
+	// inserting the instance into the database
 	err := dbmap.Insert(book)
 	if err != nil {
 		fmt.Println(err)
@@ -55,11 +57,13 @@ func (books Books) Post(book interface{}, id string) (int, interface{}) {
 
 // DELETE /books/:id
 func (books Books) Delete(book interface{}, id string) (int, interface{}) {
+	// "select * from books where id = " given id
 	delete_book, err := dbmap.Get(Book{}, id)
 	if err != nil {
 		fmt.Print(err)
 	}
 
+	// deleting from the databse
 	dbmap.Delete(delete_book)
 
 	return 200, delete_book
@@ -67,6 +71,7 @@ func (books Books) Delete(book interface{}, id string) (int, interface{}) {
 
 // PUT /books/:id
 func (books Books) Put(book interface{}, id string) (int, interface{}) {
+	// updating the book
 	dbmap.Update(book)
 
 	return 200, book
