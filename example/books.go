@@ -78,6 +78,7 @@ func (books Books) Put(book interface{}, id string) (int, interface{}) {
 }
 
 func main() {
+	dbmap.AddTableWithName(Book{}, "books").SetKeys(true, "Id")
 	books := new(Books)
 
 	var api = sleepy.NewAPI()

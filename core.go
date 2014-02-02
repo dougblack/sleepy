@@ -107,6 +107,7 @@ func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 		json.Unmarshal(body, instance)
 
 		id := request.URL.Path[resource.PathLength():]
+
 		code, data := handler(instance, id)
 
 		content, err := json.Marshal(data)
