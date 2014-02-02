@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -14,28 +15,37 @@ const (
 	DELETE = "DELETE"
 )
 
+type Resource interface {
+	// returns pointer of an instance of a model
+	ModelInstance() interface{}
+
+	// returns the length of resource path
+	// example: len("/books/")
+	PathLength() int
+}
+
 // GetSupported is the interface that provides the Get
 // method a resource must support to receive HTTP GETs.
 type GetSupported interface {
-	Get(*http.Request) (int, interface{})
+	Get(instance interface{}, id string) (int, interface{})
 }
 
 // PostSupported is the interface that provides the Post
 // method a resource must support to receive HTTP POSTs.
 type PostSupported interface {
-	Post(*http.Request) (int, interface{})
+	Post(instance interface{}, id string) (int, interface{})
 }
 
 // PutSupported is the interface that provides the Put
 // method a resource must support to receive HTTP PUTs.
 type PutSupported interface {
-	Put(*http.Request) (int, interface{})
+	Put(instance interface{}, id string) (int, interface{})
 }
 
 // DeleteSupported is the interface that provides the Delete
 // method a resource must support to receive HTTP DELETEs.
 type DeleteSupported interface {
-	Delete(*http.Request) (int, interface{})
+	Delete(instance interface{}, id string) (int, interface{})
 }
 
 // An API manages a group of resources by routing to requests
@@ -54,7 +64,7 @@ func NewAPI() *API {
 	return &API{}
 }
 
-func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
+func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
 		if request.ParseForm() != nil {
@@ -62,7 +72,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		var handler func(request *http.Request) (int, interface{})
+		var handler func(instance interface{}, id string) (int, interface{})
 
 		switch request.Method {
 		case GET:
@@ -88,7 +98,16 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		code, data := handler(request)
+		body, err := ioutil.ReadAll(request.Body)
+		if err != nil {
+			// error handling
+		}
+
+		instance := resource.ModelInstance()
+		json.Unmarshal(body, instance)
+
+		id := request.URL.Path[resource.PathLength():]
+		code, data := handler(instance, id)
 
 		content, err := json.Marshal(data)
 		if err != nil {
@@ -101,7 +120,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 }
 
 // singleton mux
-func (api *API) mux() *http.ServeMux {
+func (api *API) Mux() *http.ServeMux {
 	if api.muxInitialized {
 		return api.muxPointer
 	} else {
@@ -114,21 +133,9 @@ func (api *API) mux() *http.ServeMux {
 // AddResource adds a new resource to an API. The API will route
 // requests that match one of the given paths to the matching HTTP
 // method on the resource.
-func (api *API) AddResource(resource interface{}, paths ...string) {
+func (api *API) AddResource(resource Resource, paths ...string) {
 	for _, path := range paths {
-		api.mux().HandleFunc(path, api.requestHandler(resource))
-	}
-}
-
-// AddStaticFiles adds a new static files to an API.
-func (api *API) AddStaticFiles(path, path_to_files string) {
-	api.mux().Handle(path, http.StripPrefix(path, http.FileServer(http.Dir(path_to_files))))
-}
-
-// AddCustomHandler adds a handler which is not a resource.
-func (api *API) AddCustomHandler(handler http.HandlerFunc, paths ...string) {
-	for _, path := range paths {
-		api.mux().HandleFunc(path, handler)
+		api.Mux().HandleFunc(path, api.requestHandler(resource))
 	}
 }
 
@@ -138,5 +145,5 @@ func (api *API) Start(port int) error {
 		return errors.New("You must add at least one resource to this API.")
 	}
 	portString := fmt.Sprintf(":%d", port)
-	return http.ListenAndServe(portString, api.mux())
+	return http.ListenAndServe(portString, api.Mux())
 }
