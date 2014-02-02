@@ -39,7 +39,7 @@ type DeleteSupported interface {
 	Delete(url.Values) (int, interface{})
 }
 
-// An API manages a group of resources by routing to requests
+// An API manages a group of resources by routing requests
 // to the correct method on a matching resource and marshalling
 // the returned data to JSON for the HTTP response.
 //
