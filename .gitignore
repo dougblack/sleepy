@@ -1,1 +1,2 @@
 *.test
+example/development.sqlite3
