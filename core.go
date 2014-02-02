@@ -46,7 +46,8 @@ type DeleteSupported interface {
 // You can instantiate multiple APIs on separate ports. Each API
 // will manage its own set of resources.
 type API struct {
-	mux *http.ServeMux
+	muxPointer     *http.ServeMux
+	muxInitialized bool
 }
 
 // NewAPI allocates and returns a new API.
@@ -100,23 +101,31 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	}
 }
 
+// singleton mux
+func (api *API) Mux() *http.ServeMux {
+	if api.muxInitialized {
+		return api.muxPointer
+	} else {
+		api.muxPointer = http.NewServeMux()
+		api.muxInitialized = true
+		return api.muxPointer
+	}
+}
+
 // AddResource adds a new resource to an API. The API will route
 // requests that match one of the given paths to the matching HTTP
 // method on the resource.
 func (api *API) AddResource(resource interface{}, paths ...string) {
-	if api.mux == nil {
-		api.mux = http.NewServeMux()
-	}
 	for _, path := range paths {
-		api.mux.HandleFunc(path, api.requestHandler(resource))
+		api.Mux().HandleFunc(path, api.requestHandler(resource))
 	}
 }
 
 // Start causes the API to begin serving requests on the given port.
 func (api *API) Start(port int) error {
-	if api.mux == nil {
+	if !api.muxInitialized {
 		return errors.New("You must add at least one resource to this API.")
 	}
 	portString := fmt.Sprintf(":%d", port)
-	return http.ListenAndServe(portString, api.mux)
+	return http.ListenAndServe(portString, api.Mux())
 }
