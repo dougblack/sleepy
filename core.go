@@ -17,7 +17,7 @@ const (
 
 type Resource interface {
 	// returns pointer of an instance of a model
-	ModelInstance() interface{}
+	NewModelInstance() interface{}
 
 	// returns the length of resource path
 	// example: len("/books/")
@@ -103,7 +103,7 @@ func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 			// error handling
 		}
 
-		instance := resource.ModelInstance()
+		instance := resource.NewModelInstance()
 		json.Unmarshal(body, instance)
 
 		id := request.URL.Path[resource.PathLength():]
