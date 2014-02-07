@@ -18,25 +18,25 @@ const (
 // GetSupported is the interface that provides the Get
 // method a resource must support to receive HTTP GETs.
 type GetSupported interface {
-	Get(url.Values) (int, interface{})
+	Get(url.Values, map[string][]string) (int, interface{}, map[string][]string)
 }
 
 // PostSupported is the interface that provides the Post
 // method a resource must support to receive HTTP POSTs.
 type PostSupported interface {
-	Post(url.Values) (int, interface{})
+	Post(url.Values, map[string][]string) (int, interface{}, map[string][]string)
 }
 
 // PutSupported is the interface that provides the Put
 // method a resource must support to receive HTTP PUTs.
 type PutSupported interface {
-	Put(url.Values) (int, interface{})
+	Put(url.Values, map[string][]string) (int, interface{}, map[string][]string)
 }
 
 // DeleteSupported is the interface that provides the Delete
 // method a resource must support to receive HTTP DELETEs.
 type DeleteSupported interface {
-	Delete(url.Values) (int, interface{})
+	Delete(url.Values, map[string][]string) (int, interface{}, map[string][]string)
 }
 
 // An API manages a group of resources by routing requests
@@ -62,7 +62,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		var handler func(url.Values) (int, interface{})
+		var handler func(url.Values, map[string][]string) (int, interface{}, map[string][]string)
 
 		switch request.Method {
 		case GET:
@@ -88,12 +88,17 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		code, data := handler(request.Form)
+		code, data, headers := handler(request.Form, request.Header)
 
 		content, err := json.Marshal(data)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+		for name, values := range headers {
+			for _, value := range values {
+				rw.Header().Add(name, value)
+			}
 		}
 		rw.WriteHeader(code)
 		rw.Write(content)
