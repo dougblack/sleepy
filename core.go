@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -18,25 +17,25 @@ const (
 // GetSupported is the interface that provides the Get
 // method a resource must support to receive HTTP GETs.
 type GetSupported interface {
-	Get(url.Values) (int, interface{})
+	Get(*http.Request) (int, interface{})
 }
 
 // PostSupported is the interface that provides the Post
 // method a resource must support to receive HTTP POSTs.
 type PostSupported interface {
-	Post(url.Values) (int, interface{})
+	Post(*http.Request) (int, interface{})
 }
 
 // PutSupported is the interface that provides the Put
 // method a resource must support to receive HTTP PUTs.
 type PutSupported interface {
-	Put(url.Values) (int, interface{})
+	Put(*http.Request) (int, interface{})
 }
 
 // DeleteSupported is the interface that provides the Delete
 // method a resource must support to receive HTTP DELETEs.
 type DeleteSupported interface {
-	Delete(url.Values) (int, interface{})
+	Delete(*http.Request) (int, interface{})
 }
 
 // An API manages a group of resources by routing requests
@@ -62,7 +61,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		var handler func(url.Values) (int, interface{})
+		var handler func(*http.Request) (int, interface{})
 
 		switch request.Method {
 		case GET:
@@ -88,7 +87,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		code, data := handler(request.Form)
+		code, data := handler(request)
 
 		content, err := json.Marshal(data)
 		if err != nil {
