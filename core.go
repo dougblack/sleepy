@@ -106,7 +106,8 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	}
 }
 
-// singleton mux
+// Mux returns the http.ServeMux used by an API. If a ServeMux has
+// does not yet exist, a new one will be created and returned.
 func (api *API) Mux() *http.ServeMux {
 	if api.muxInitialized {
 		return api.muxPointer
