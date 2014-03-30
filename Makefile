@@ -1,7 +1,7 @@
 all:
 
 test:
-	. script/test
+	go test .
 
 authors:
 	echo "Authors\n=======\n\nA huge thanks to all of our contributors:\n\n" > AUTHORS.md
