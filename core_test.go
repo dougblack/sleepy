@@ -1,7 +1,6 @@
 package sleepy
 
 import (
-	"github.com/dougblack/sleepy"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -20,7 +19,7 @@ func TestBasicGet(t *testing.T) {
 
 	item := new(Item)
 
-	var api = sleepy.NewAPI()
+	var api = NewAPI()
 	api.AddResource(item, "/items", "/bar", "/baz")
 	go api.Start(3000)
 	resp, err := http.Get("http://localhost:3000/items")
