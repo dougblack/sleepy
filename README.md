@@ -14,10 +14,10 @@ import (
 
 type Item struct { }
 
-func (item Item) Get(values url.Values) (int, interface{}) {
+func (item Item) Get(values url.Values, headers map[string][]string) (int, interface{}, map[string][]string) {
     items := []string{"item1", "item2"}
     data := map[string][]string{"items": items}
-    return 200, data
+    return 200, data, map[string][]string{"Content-type": {"application/json"}}
 }
 
 func main() {
