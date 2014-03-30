@@ -46,7 +46,7 @@ type DeleteSupported interface {
 // You can instantiate multiple APIs on separate ports. Each API
 // will manage its own set of resources.
 type API struct {
-	muxPointer     *http.ServeMux
+	mux     *http.ServeMux
 	muxInitialized bool
 }
 
@@ -110,11 +110,11 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 // does not yet exist, a new one will be created and returned.
 func (api *API) Mux() *http.ServeMux {
 	if api.muxInitialized {
-		return api.muxPointer
+		return api.mux
 	} else {
-		api.muxPointer = http.NewServeMux()
+		api.mux = http.NewServeMux()
 		api.muxInitialized = true
-		return api.muxPointer
+		return api.mux
 	}
 }
 
