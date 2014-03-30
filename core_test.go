@@ -10,10 +10,10 @@ import (
 
 type Item struct{}
 
-func (item Item) Get(values url.Values) (int, interface{}) {
+func (item Item) Get(values url.Values, headers http.Header) (int, interface{}, http.Header) {
 	items := []string{"item1", "item2"}
 	data := map[string][]string{"items": items}
-	return 200, data
+	return 200, data, nil
 }
 
 func TestBasicGet(t *testing.T) {
