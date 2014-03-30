@@ -18,25 +18,25 @@ const (
 // GetSupported is the interface that provides the Get
 // method a resource must support to receive HTTP GETs.
 type GetSupported interface {
-	Get(url.Values, map[string][]string) (int, interface{}, map[string][]string)
+	Get(url.Values, http.Header) (int, interface{}, http.Header)
 }
 
 // PostSupported is the interface that provides the Post
 // method a resource must support to receive HTTP POSTs.
 type PostSupported interface {
-	Post(url.Values, map[string][]string) (int, interface{}, map[string][]string)
+	Post(url.Values, http.Header) (int, interface{}, http.Header)
 }
 
 // PutSupported is the interface that provides the Put
 // method a resource must support to receive HTTP PUTs.
 type PutSupported interface {
-	Put(url.Values, map[string][]string) (int, interface{}, map[string][]string)
+	Put(url.Values, http.Header) (int, interface{}, http.Header)
 }
 
 // DeleteSupported is the interface that provides the Delete
 // method a resource must support to receive HTTP DELETEs.
 type DeleteSupported interface {
-	Delete(url.Values, map[string][]string) (int, interface{}, map[string][]string)
+	Delete(url.Values, http.Header) (int, interface{}, http.Header)
 }
 
 // An API manages a group of resources by routing requests
@@ -63,7 +63,7 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		var handler func(url.Values, map[string][]string) (int, interface{}, map[string][]string)
+		var handler func(url.Values, http.Header) (int, interface{}, http.Header)
 
 		switch request.Method {
 		case GET:
@@ -89,14 +89,14 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 			return
 		}
 
-		code, data, headers := handler(request.Form, request.Header)
+		code, data, header := handler(request.Form, request.Header)
 
 		content, err := json.Marshal(data)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		for name, values := range headers {
+		for name, values := range header {
 			for _, value := range values {
 				rw.Header().Add(name, value)
 			}
