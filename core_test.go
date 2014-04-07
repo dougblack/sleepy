@@ -27,7 +27,7 @@ func TestBasicGet(t *testing.T) {
 		t.Error(err)
 	}
 	body, _ := ioutil.ReadAll(resp.Body)
-	if string(body) != `{"items":["item1","item2"]}` {
+	if string(body) != "{\n  \"items\": [\n    \"item1\",\n    \"item2\"\n  ]\n}" {
 		t.Error("Not equal.")
 	}
 }
