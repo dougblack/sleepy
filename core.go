@@ -127,6 +127,15 @@ func (api *API) AddResource(resource interface{}, paths ...string) {
 	}
 }
 
+// AddResourceWithWrapper behaves exactly like AddResource but wraps
+// the generated handler function with a give wrapper function to allow
+// to hook in Gzip support and similar.
+func (api *API) AddResourceWithWrapper(resource interface{}, wrapper func(handler http.HandlerFunc) http.HandlerFunc, paths ...string) {
+	for _, path := range paths {
+		api.Mux().HandleFunc(path, wrapper(api.requestHandler(resource)))
+	}
+}
+
 // Start causes the API to begin serving requests on the given port.
 func (api *API) Start(port int) error {
 	if !api.muxInitialized {
