@@ -118,6 +118,16 @@ func (api *API) Mux() *http.ServeMux {
 	}
 }
 
+// SetMux sets the http.ServeMux to use by an API.
+func (api *API) SetMux(mux *http.ServeMux) error {
+	if api.muxInitialized {
+		return errors.New("You cannot set a muxer when already initialized.")
+	} else {
+		api.mux = mux
+		return nil
+	}
+}
+
 // AddResource adds a new resource to an API. The API will route
 // requests that match one of the given paths to the matching HTTP
 // method on the resource.
