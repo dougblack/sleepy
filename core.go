@@ -131,6 +131,7 @@ func (api *API) SetMux(mux APIMux) error {
 		return errors.New("You cannot set a muxer when already initialized.")
 	} else {
 		api.mux = mux
+		api.muxInitialized = true
 		return nil
 	}
 }
