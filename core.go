@@ -13,6 +13,8 @@ const (
 	POST   = "POST"
 	PUT    = "PUT"
 	DELETE = "DELETE"
+	HEAD   = "HEAD"
+	PATCH  = "PATCH"
 )
 
 // GetSupported is the interface that provides the Get
@@ -37,6 +39,18 @@ type PutSupported interface {
 // method a resource must support to receive HTTP DELETEs.
 type DeleteSupported interface {
 	Delete(url.Values, http.Header) (int, interface{}, http.Header)
+}
+
+// HeadSupported is the interface that provides the Head
+// method a resource must support to receive HTTP HEADs.
+type HeadSupported interface {
+	Head(url.Values, http.Header) (int, interface{}, http.Header)
+}
+
+// PatchSupported is the interface that provides the Patch
+// method a resource must support to receive HTTP PATCHs.
+type PatchSupported interface {
+	Patch(url.Values, http.Header) (int, interface{}, http.Header)
 }
 
 // An API manages a group of resources by routing requests
@@ -81,6 +95,14 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 		case DELETE:
 			if resource, ok := resource.(DeleteSupported); ok {
 				handler = resource.Delete
+			}
+		case HEAD:
+			if resource, ok := resource.(HeadSupported); ok {
+				handler = resource.Head
+			}
+		case PATCH:
+			if resource, ok := resource.(PatchSupported); ok {
+				handler = resource.Patch
 			}
 		}
 
