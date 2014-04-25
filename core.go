@@ -39,6 +39,12 @@ type DeleteSupported interface {
 	Delete(url.Values, http.Header) (int, interface{}, http.Header)
 }
 
+// Interface for arbitrary muxer support (like http.ServeMux).
+type APIMux interface {
+	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
+}
+
 // An API manages a group of resources by routing requests
 // to the correct method on a matching resource and marshalling
 // the returned data to JSON for the HTTP response.
@@ -46,7 +52,7 @@ type DeleteSupported interface {
 // You can instantiate multiple APIs on separate ports. Each API
 // will manage its own set of resources.
 type API struct {
-	mux     *http.ServeMux
+	mux            APIMux
 	muxInitialized bool
 }
 
@@ -106,15 +112,27 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 	}
 }
 
-// Mux returns the http.ServeMux used by an API. If a ServeMux has
-// does not yet exist, a new one will be created and returned.
-func (api *API) Mux() *http.ServeMux {
+// Mux returns the muxer used by an API. If a ServeMux does not
+// yet exist, a new *http.ServeMux will be created and returned.
+func (api *API) Mux() APIMux {
 	if api.muxInitialized {
 		return api.mux
 	} else {
 		api.mux = http.NewServeMux()
 		api.muxInitialized = true
 		return api.mux
+	}
+}
+
+// SetMux sets the muxer to use by an API. A muxer needs to
+// implement the APIMux interface (eg. http.ServeMux).
+func (api *API) SetMux(mux APIMux) error {
+	if api.muxInitialized {
+		return errors.New("You cannot set a muxer when already initialized.")
+	} else {
+		api.mux = mux
+		api.muxInitialized = true
+		return nil
 	}
 }
 
