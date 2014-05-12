@@ -8,15 +8,6 @@ import (
 	"net/url"
 )
 
-const (
-	GET    = "GET"
-	POST   = "POST"
-	PUT    = "PUT"
-	DELETE = "DELETE"
-	HEAD   = "HEAD"
-	PATCH  = "PATCH"
-)
-
 // GetSupported is the interface that provides the Get
 // method a resource must support to receive HTTP GETs.
 type GetSupported interface {
@@ -80,27 +71,27 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 		var handler func(url.Values, http.Header) (int, interface{}, http.Header)
 
 		switch request.Method {
-		case GET:
+		case "GET":
 			if resource, ok := resource.(GetSupported); ok {
 				handler = resource.Get
 			}
-		case POST:
+		case "POST":
 			if resource, ok := resource.(PostSupported); ok {
 				handler = resource.Post
 			}
-		case PUT:
+		case "PUT":
 			if resource, ok := resource.(PutSupported); ok {
 				handler = resource.Put
 			}
-		case DELETE:
+		case "DELETE":
 			if resource, ok := resource.(DeleteSupported); ok {
 				handler = resource.Delete
 			}
-		case HEAD:
+		case "HEAD":
 			if resource, ok := resource.(HeadSupported); ok {
 				handler = resource.Head
 			}
-		case PATCH:
+		case "PATCH":
 			if resource, ok := resource.(PatchSupported); ok {
 				handler = resource.Patch
 			}
@@ -131,13 +122,12 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 // Mux returns the http.ServeMux used by an API. If a ServeMux has
 // does not yet exist, a new one will be created and returned.
 func (api *API) Mux() *http.ServeMux {
-	if api.muxInitialized {
-		return api.mux
-	} else {
+	if !api.muxInitialized {
 		api.mux = http.NewServeMux()
 		api.muxInitialized = true
-		return api.mux
 	}
+
+	return api.mux
 }
 
 // AddResource adds a new resource to an API. The API will route
@@ -161,7 +151,7 @@ func (api *API) AddResourceWithWrapper(resource interface{}, wrapper func(handle
 // Start causes the API to begin serving requests on the given port.
 func (api *API) Start(port int) error {
 	if !api.muxInitialized {
-		return errors.New("You must add at least one resource to this API.")
+		return errors.New("you must add at least one resource to this API")
 	}
 	portString := fmt.Sprintf(":%d", port)
 	return http.ListenAndServe(portString, api.Mux())
