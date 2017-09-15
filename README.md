@@ -1,5 +1,8 @@
 ## Sleepy
 
+I wrote about the creation of sleepy
+[here](https://dougblack.io/words/a-restful-micro-framework-in-go.html).
+
 #### A RESTful framework for Go
 
 Sleepy is a micro-framework for building RESTful APIs.
