@@ -10,3 +10,4 @@ A huge thanks to all of our contributors:
 - Karan Misra 
 - strandmon 
 - yuyabe 
+- Simon Eisenmann

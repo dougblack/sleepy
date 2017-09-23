@@ -60,7 +60,7 @@ type PatchSupported interface {
 // You can instantiate multiple APIs on separate ports. Each API
 // will manage its own set of resources.
 type API struct {
-	mux     *http.ServeMux
+	mux            *http.ServeMux
 	muxInitialized bool
 }
 
@@ -113,7 +113,26 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 
 		code, data, header := handler(request.Form, request.Header)
 
-		content, err := json.MarshalIndent(data, "", "  ")
+		var content []byte
+		var err error
+
+		switch data.(type) {
+		case string:
+			content = []byte(data.(string))
+		case []byte:
+			content = data.([]byte)
+		default:
+			// Encode JSON.
+			content, err = json.MarshalIndent(data, "", "  ")
+			if err != nil {
+				if header == nil {
+					header = http.Header{"Content-Type": {"application/json"}}
+				} else if header.Get("Content-Type") == "" {
+					header.Set("Content-Type", "application/json")
+				}
+			}
+		}
+
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
