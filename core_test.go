@@ -7,7 +7,9 @@ import (
 	"testing"
 )
 
-type Item struct{}
+type Item struct{
+				NotSupported
+} 
 
 func (item Item) Get(values url.Values, headers http.Header) (int, interface{}, http.Header) {
 	items := []string{"item1", "item2"}
