@@ -17,41 +17,41 @@ const (
 	PATCH  = "PATCH"
 )
 
-// GetSupported is the interface that provides the Get
-// method a resource must support to receive HTTP GETs.
-type GetSupported interface {
+type Resource interface {
 	Get(url.Values, http.Header) (int, interface{}, http.Header)
-}
-
-// PostSupported is the interface that provides the Post
-// method a resource must support to receive HTTP POSTs.
-type PostSupported interface {
 	Post(url.Values, http.Header) (int, interface{}, http.Header)
-}
-
-// PutSupported is the interface that provides the Put
-// method a resource must support to receive HTTP PUTs.
-type PutSupported interface {
 	Put(url.Values, http.Header) (int, interface{}, http.Header)
-}
-
-// DeleteSupported is the interface that provides the Delete
-// method a resource must support to receive HTTP DELETEs.
-type DeleteSupported interface {
 	Delete(url.Values, http.Header) (int, interface{}, http.Header)
-}
-
-// HeadSupported is the interface that provides the Head
-// method a resource must support to receive HTTP HEADs.
-type HeadSupported interface {
 	Head(url.Values, http.Header) (int, interface{}, http.Header)
-}
-
-// PatchSupported is the interface that provides the Patch
-// method a resource must support to receive HTTP PATCHs.
-type PatchSupported interface {
 	Patch(url.Values, http.Header) (int, interface{}, http.Header)
 }
+
+type NotSupported struct {}
+
+func (NotSupported) Get(url.Values, http.Header) (int, interface{}, http.Header) {
+				return http.StatusMethodNotAllowed, nil, nil
+}
+
+func (NotSupported) Post(url.Values, http.Header) (int, interface{}, http.Header) {
+				return http.StatusMethodNotAllowed, nil, nil
+}
+
+func (NotSupported) Put(url.Values, http.Header) (int, interface{}, http.Header) {
+				return http.StatusMethodNotAllowed, nil, nil
+}
+
+func (NotSupported) Delete(url.Values, http.Header) (int, interface{}, http.Header) {
+				return http.StatusMethodNotAllowed, nil, nil
+}
+
+func (NotSupported) Patch(url.Values, http.Header) (int, interface{}, http.Header) {
+				return http.StatusMethodNotAllowed, nil, nil
+}
+
+func (NotSupported) Head(url.Values, http.Header) (int, interface{}, http.Header) {
+				return http.StatusMethodNotAllowed, nil, nil
+}
+
 
 // An API manages a group of resources by routing requests
 // to the correct method on a matching resource and marshalling
@@ -69,7 +69,7 @@ func NewAPI() *API {
 	return &API{}
 }
 
-func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
+func (api *API) requestHandler(resource Resource) http.HandlerFunc {
 	return func(rw http.ResponseWriter, request *http.Request) {
 
 		if request.ParseForm() != nil {
@@ -81,43 +81,32 @@ func (api *API) requestHandler(resource interface{}) http.HandlerFunc {
 
 		switch request.Method {
 		case GET:
-			if resource, ok := resource.(GetSupported); ok {
 				handler = resource.Get
-			}
 		case POST:
-			if resource, ok := resource.(PostSupported); ok {
 				handler = resource.Post
-			}
 		case PUT:
-			if resource, ok := resource.(PutSupported); ok {
 				handler = resource.Put
-			}
 		case DELETE:
-			if resource, ok := resource.(DeleteSupported); ok {
 				handler = resource.Delete
-			}
 		case HEAD:
-			if resource, ok := resource.(HeadSupported); ok {
 				handler = resource.Head
-			}
 		case PATCH:
-			if resource, ok := resource.(PatchSupported); ok {
 				handler = resource.Patch
-			}
-		}
-
-		if handler == nil {
-			rw.WriteHeader(http.StatusMethodNotAllowed)
-			return
 		}
 
 		code, data, header := handler(request.Form, request.Header)
+
+		if code < http.StatusOK || code > 300  {
+			rw.WriteHeader(code)
+			return
+		}
 
 		content, err := json.MarshalIndent(data, "", "  ")
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
 		for name, values := range header {
 			for _, value := range values {
 				rw.Header().Add(name, value)
@@ -143,7 +132,7 @@ func (api *API) Mux() *http.ServeMux {
 // AddResource adds a new resource to an API. The API will route
 // requests that match one of the given paths to the matching HTTP
 // method on the resource.
-func (api *API) AddResource(resource interface{}, paths ...string) {
+func (api *API) AddResource(resource Resource, paths ...string) {
 	for _, path := range paths {
 		api.Mux().HandleFunc(path, api.requestHandler(resource))
 	}
@@ -152,7 +141,7 @@ func (api *API) AddResource(resource interface{}, paths ...string) {
 // AddResourceWithWrapper behaves exactly like AddResource but wraps
 // the generated handler function with a give wrapper function to allow
 // to hook in Gzip support and similar.
-func (api *API) AddResourceWithWrapper(resource interface{}, wrapper func(handler http.HandlerFunc) http.HandlerFunc, paths ...string) {
+func (api *API) AddResourceWithWrapper(resource Resource, wrapper func(handler http.HandlerFunc) http.HandlerFunc, paths ...string) {
 	for _, path := range paths {
 		api.Mux().HandleFunc(path, wrapper(api.requestHandler(resource)))
 	}
